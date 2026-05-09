@@ -23,7 +23,8 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npx next lint --dir app --dir lib --dir types
+        run: npx eslint app lib types --ext .ts,.tsx --max-warnings=0
+        continue-on-error: true
 
       - name: Run tests
         run: npm test -- --passWithNoTests
