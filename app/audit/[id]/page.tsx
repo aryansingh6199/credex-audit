@@ -21,7 +21,6 @@ export default function AuditPage() {
         setAudit(data)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
   }, [id])
 
   async function handleLeadSubmit() {
@@ -48,9 +47,8 @@ export default function AuditPage() {
     </div>
   )
 
-  const isHighSavings = (audit.totalMonthlySavings ?? 0) > 500
-  const isOptimal = (audit.totalMonthlySavings ?? 0) < 100
-  const recommendations = audit.recommendations ?? []
+  const isHighSavings = audit.totalMonthlySavings > 500
+  const isOptimal = audit.totalMonthlySavings < 100
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
@@ -63,8 +61,8 @@ export default function AuditPage() {
 
         <div className="bg-gray-900 rounded-2xl p-8 mb-6 text-center">
           <p className="text-gray-400 text-sm mb-1">Total Monthly Savings</p>
-          <p className="text-5xl font-bold text-green-400">${audit.totalMonthlySavings ?? 0}</p>
-          <p className="text-gray-400 mt-1">${audit.totalAnnualSavings ?? 0} saved per year</p>
+          <p className="text-5xl font-bold text-green-400">${audit.totalMonthlySavings}</p>
+          <p className="text-gray-400 mt-1">${audit.totalAnnualSavings} saved per year</p>
         </div>
 
         <div className="bg-gray-900 rounded-2xl p-6 mb-6">
@@ -80,7 +78,7 @@ export default function AuditPage() {
         )}
 
         <div className="space-y-4 mb-8">
-          {recommendations.map((rec, i) => (
+          {audit.recommendations.map((rec, i) => (
             <div key={i} className="bg-gray-900 rounded-xl p-5">
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -171,7 +169,9 @@ export default function AuditPage() {
             Copy Shareable Link
           </button>
           
-            <a href="/" className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 rounded-lg transition-all text-sm text-center">
+            <a
+            className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 rounded-lg transition-all text-sm text-center"
+          >
             Run Another Audit
           </a>
         </div>
