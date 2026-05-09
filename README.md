@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Credex AI Spend Auditor
 
-## Getting Started
+A free web app that audits your team's AI tool spending (Cursor, Claude, ChatGPT, Copilot, and more) and shows exactly where you're overspending, what to switch, and how much you'd save monthly and annually.
 
-First, run the development server:
+Built as part of the Credex Web Development Intern Assignment.
 
+## Live URL
+_Coming soon — will be deployed on Vercel_
+
+## Screenshots
+_Coming soon_
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- npm
+
+### Install & Run Locally
 ```bash
+git clone https://github.com/YOUR_USERNAME/credex-audit.git
+cd credex-audit
+npm install
+cp .env.example .env.local
+# fill in your env variables
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Deploy
+Push to main branch — Vercel auto-deploys.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Decisions
 
-## Learn More
+1. **Next.js over plain React** — Need SSR for Open Graph tags on shareable audit URLs. Static React can't do that cleanly.
+2. **Supabase over Firebase** — Postgres gives us proper relational queries; audit + lead data fits a table structure better than a document store.
+3. **Hardcoded audit rules over AI** — Pricing logic must be defensible and deterministic. AI hallucinating a savings number would be worse than no AI at all.
+4. **Email captured after audit, never before** — Showing value first increases conversion and respects the user. Gate too early and they leave.
+5. **Resend over SES** — SES requires domain verification and AWS setup. Resend works in 5 minutes on free tier, right call for a 7-day build.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech Stack
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS + shadcn/ui
+- Supabase (Postgres)
+- Anthropic API (claude-sonnet-4-20250514)
+- Resend (transactional email)
