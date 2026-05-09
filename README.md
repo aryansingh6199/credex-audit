@@ -5,10 +5,15 @@ A free web app that audits your team's AI tool spending (Cursor, Claude, ChatGPT
 Built as part of the Credex Web Development Intern Assignment.
 
 ## Live URL
-_Coming soon — will be deployed on Vercel_
+https://credex-audit-three.vercel.app/
 
 ## Screenshots
-_Coming soon_
+### Home Page — Spend Input Form
+![Home Page](public/screenshots/screenshot1.png)
+### Results Page — Audit Results
+![Results Page](public/screenshots/screenshot2.png)
+![Results Page](public/screenshots/screenshot3.png)
+![Results Page](public/screenshots/screenshot4.png)
 
 ## Quick Start
 
