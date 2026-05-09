@@ -1,181 +1,194 @@
 "use client"
-import { useEffect, useState } from "react"
-import { AuditResult } from "@/types"
-import { useParams } from "next/navigation"
+import { useState, useEffect } from "react"
+import { AuditInput, ToolName, UseCase } from "@/types"
+import { useRouter } from "next/navigation"
 
-export default function AuditPage() {
-  const { id } = useParams()
-  const [audit, setAudit] = useState<AuditResult | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [showLeadForm, setShowLeadForm] = useState(false)
-  const [email, setEmail] = useState("")
-  const [company, setCompany] = useState("")
-  const [role, setRole] = useState("")
-  const [submitted, setSubmitted] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+const TOOLS = [
+  { id: "cursor", label: "Cursor", plans: ["hobby", "pro", "business", "enterprise"] },
+  { id: "github_copilot", label: "GitHub Copilot", plans: ["individual", "business", "enterprise"] },
+  { id: "claude", label: "Claude", plans: ["free", "pro", "max", "team", "enterprise", "api"] },
+  { id: "chatgpt", label: "ChatGPT", plans: ["plus", "team", "enterprise", "api"] },
+  { id: "anthropic_api", label: "Anthropic API", plans: ["pay_as_you_go"] },
+  { id: "openai_api", label: "OpenAI API", plans: ["pay_as_you_go"] },
+  { id: "gemini", label: "Gemini", plans: ["free", "pro", "ultra", "api"] },
+  { id: "windsurf", label: "Windsurf", plans: ["free", "pro", "teams"] },
+]
+
+const USE_CASES = ["coding", "writing", "data", "research", "mixed"]
+
+const EMPTY_FORM: AuditInput = {
+  tools: [],
+  teamSize: 1,
+  useCase: "coding",
+}
+
+export default function Home() {
+  const router = useRouter()
+  const [form, setForm] = useState<AuditInput>(EMPTY_FORM)
+  const [selectedTools, setSelectedTools] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   useEffect(() => {
-    fetch(`/api/audit/${id}`)
-      .then(r => r.json())
-      .then(data => {
-        setAudit(data)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [id])
+    const saved = localStorage.getItem("auditForm")
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setForm(parsed)
+      setSelectedTools(parsed.tools.map((t: any) => t.tool))
+    }
+  }, [])
 
-  async function handleLeadSubmit() {
-    if (!email) return
-    setSubmitting(true)
-    await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, companyName: company, role, auditId: id }),
-    })
-    setSubmitted(true)
-    setSubmitting(false)
+  useEffect(() => {
+    localStorage.setItem("auditForm", JSON.stringify(form))
+  }, [form])
+
+  function toggleTool(toolId: string) {
+    if (selectedTools.includes(toolId)) {
+      setSelectedTools(selectedTools.filter(t => t !== toolId))
+      setForm(f => ({ ...f, tools: f.tools.filter(t => t.tool !== toolId) }))
+    } else {
+      setSelectedTools([...selectedTools, toolId])
+      setForm(f => ({
+        ...f,
+        tools: [...f.tools, { tool: toolId as ToolName, plan: TOOLS.find(t => t.id === toolId)!.plans[0], seats: 1, monthlySpend: 0 }]
+      }))
+    }
   }
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-      <p className="text-gray-400">Loading your audit...</p>
-    </div>
-  )
+  function updateTool(toolId: string, field: string, value: string | number) {
+    setForm(f => ({
+      ...f,
+      tools: f.tools.map(t => t.tool === toolId ? { ...t, [field]: value } : t)
+    }))
+  }
 
-  if (!audit) return (
-    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-      <p className="text-gray-400">Audit not found.</p>
-    </div>
-  )
-
-  const isHighSavings = (audit.totalMonthlySavings ?? 0) > 500
-  const isOptimal = (audit.totalMonthlySavings ?? 0) < 100
-  const recommendations = audit.recommendations ?? []
+  async function handleSubmit() {
+    if (form.tools.length === 0) {
+      setError("Please select at least one tool.")
+      return
+    }
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      router.push(`/audit/${data.id}`)
+    } catch {
+      setError("Something went wrong. Please try again.")
+      setLoading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
       <div className="max-w-3xl mx-auto px-4 py-16">
-
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold mb-2">Your AI Spend Audit</h1>
-          <p className="text-gray-400">Here is where your money is going and where you can save.</p>
+          <h1 className="text-4xl font-bold mb-3">AI Spend Auditor</h1>
+          <p className="text-gray-400 text-lg">Find out where your team is overspending on AI tools in 60 seconds.</p>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl p-8 mb-6 text-center">
-          <p className="text-gray-400 text-sm mb-1">Total Monthly Savings</p>
-          <p className="text-5xl font-bold text-green-400">${audit.totalMonthlySavings ?? 0}</p>
-          <p className="text-gray-400 mt-1">${audit.totalAnnualSavings ?? 0} saved per year</p>
-        </div>
-
-        <div className="bg-gray-900 rounded-2xl p-6 mb-6">
-          <h2 className="font-semibold text-gray-300 mb-2 text-sm uppercase tracking-wide">AI Summary</h2>
-          <p className="text-gray-200 leading-relaxed">{audit.aiSummary}</p>
-        </div>
-
-        {isHighSavings && (
-          <div className="bg-green-900 border border-green-700 rounded-2xl p-6 mb-6">
-            <h2 className="font-bold text-green-300 text-lg mb-2">You qualify for a Credex consultation</h2>
-            <p className="text-green-200 text-sm">With over $500/month in identified savings, Credex can help you capture even more through discounted AI credits.</p>
+        <div className="bg-gray-900 rounded-2xl p-8 space-y-8">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Team Size</label>
+            <input
+              type="number"
+              min={1}
+              value={form.teamSize}
+              onChange={e => setForm(f => ({ ...f, teamSize: parseInt(e.target.value) || 1 }))}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
+            />
           </div>
-        )}
 
-        <div className="space-y-4 mb-8">
-          {recommendations.map((rec, i) => (
-            <div key={i} className="bg-gray-900 rounded-xl p-5">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-semibold capitalize">{rec.tool.replace("_", " ")}</h3>
-                  <p className="text-sm text-gray-400">Current: {rec.currentPlan} plan · ${rec.currentSpend}/mo</p>
-                </div>
-                <div className="text-right">
-                  {rec.monthlySavings > 0 ? (
-                    <span className="text-green-400 font-bold">-${rec.monthlySavings}/mo</span>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Optimal</span>
-                  )}
-                </div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <p className="text-sm font-medium text-white mb-1">{rec.recommendedAction}</p>
-                <p className="text-sm text-gray-400">{rec.reason}</p>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Primary Use Case</label>
+            <select
+              value={form.useCase}
+              onChange={e => setForm(f => ({ ...f, useCase: e.target.value as UseCase }))}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
+            >
+              {USE_CASES.map(u => (
+                <option key={u} value={u}>{u.charAt(0).toUpperCase() + u.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-3">Select your AI tools</label>
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {TOOLS.map(tool => (
+                <button
+                  key={tool.id}
+                  onClick={() => toggleTool(tool.id)}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    selectedTools.includes(tool.id)
+                      ? "bg-green-600 border-green-500 text-white"
+                      : "bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500"
+                  }`}
+                >
+                  {tool.label}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {isOptimal && (
-          <div className="bg-gray-900 rounded-2xl p-6 mb-6 text-center">
-            <h2 className="font-bold text-white text-lg mb-1">You are spending well</h2>
-            <p className="text-gray-400 text-sm">Your current AI stack is well-optimized.</p>
+            {selectedTools.map(toolId => {
+              const tool = TOOLS.find(t => t.id === toolId)!
+              const toolData = form.tools.find(t => t.tool === toolId)
+              return (
+                <div key={toolId} className="bg-gray-800 rounded-xl p-4 mb-3">
+                  <h3 className="font-medium mb-3">{tool.label}</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Plan</label>
+                      <select
+                        value={toolData?.plan}
+                        onChange={e => updateTool(toolId, "plan", e.target.value)}
+                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white"
+                      >
+                        {tool.plans.map(p => (
+                          <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Seats</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={toolData?.seats}
+                        onChange={e => updateTool(toolId, "seats", parseInt(e.target.value) || 1)}
+                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Monthly Spend ($)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={toolData?.monthlySpend}
+                        onChange={e => updateTool(toolId, "monthlySpend", parseFloat(e.target.value) || 0)}
+                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        )}
 
-        {!submitted ? (
-          <div className="bg-gray-900 rounded-2xl p-6 mb-6">
-            {!showLeadForm ? (
-              <div className="text-center">
-                <h2 className="font-bold text-white text-lg mb-2">Save and Email Your Report</h2>
-                <p className="text-gray-400 text-sm mb-4">Get a copy of this audit sent to your inbox.</p>
-                <button
-                  onClick={() => setShowLeadForm(true)}
-                  className="bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-2 rounded-lg transition-all"
-                >
-                  Send My Report
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <h2 className="font-bold text-white text-lg mb-3">Send My Report</h2>
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Company name (optional)"
-                  value={company}
-                  onChange={e => setCompany(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Your role (optional)"
-                  value={role}
-                  onChange={e => setRole(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
-                />
-                <button
-                  onClick={handleLeadSubmit}
-                  disabled={submitting}
-                  className="w-full bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white font-semibold py-2 rounded-lg transition-all"
-                >
-                  {submitting ? "Sending..." : "Send Report"}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="bg-gray-900 rounded-2xl p-6 mb-6 text-center">
-            <p className="text-green-400 font-semibold">Report sent to {email}</p>
-          </div>
-        )}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
 
-        <div className="flex gap-3">
           <button
-            onClick={() => navigator.clipboard.writeText(window.location.href)}
-            className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 rounded-lg transition-all text-sm"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-all"
           >
-            Copy Shareable Link
+            {loading ? "Analyzing your spend..." : "Run My Free Audit"}
           </button>
-          
-            <a href="/" className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 rounded-lg transition-all text-sm text-center">
-            Run Another Audit
-          </a>
         </div>
-
       </div>
     </main>
   )
