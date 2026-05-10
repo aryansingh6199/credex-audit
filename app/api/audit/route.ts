@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from "next/server"
 import { runAudit } from "@/lib/auditEngine"
 import { supabase } from "@/lib/supabase"
 import { AuditInput } from "@/types"
+const rateLimitMap = new Map<string, { count: number; timestamp: number }>()
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const windowMs = 60 * 1000
+  const maxRequests = 10
+
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now - entry.timestamp > windowMs) {
+    rateLimitMap.set(ip, { count: 1, timestamp: now })
+    return false
+  }
+  if (entry.count >= maxRequests) return true
+  entry.count++
+  return false
+}
 
 async function generateSummary(input: AuditInput, monthlySavings: number): Promise<string> {
   try {
@@ -43,6 +59,10 @@ function fallbackSummary(input: AuditInput, monthlySavings: number): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 })
+  }
     const input: AuditInput = await req.json()
     const audit = runAudit(input)
     const aiSummary = await generateSummary(input, audit.totalMonthlySavings)
