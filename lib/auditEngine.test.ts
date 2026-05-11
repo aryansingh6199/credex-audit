@@ -49,3 +49,22 @@ test("annual savings should be 12x monthly savings", () => {
   })
   expect(result.totalAnnualSavings).toBe(result.totalMonthlySavings * 12)
 })
+test("perplexity enterprise with 3 seats should recommend downgrade to pro", () => {
+  const result = runAudit({
+    tools: [{ tool: "perplexity", plan: "enterprise", seats: 3, monthlySpend: 120 }],
+    teamSize: 3,
+    useCase: "research",
+  })
+  expect(result.recommendations[0].recommendedPlan).toBe("pro")
+  expect(result.recommendations[0].monthlySavings).toBe(60)
+})
+
+test("perplexity pro for coding team should recommend free tier", () => {
+  const result = runAudit({
+    tools: [{ tool: "perplexity", plan: "pro", seats: 2, monthlySpend: 40 }],
+    teamSize: 2,
+    useCase: "coding",
+  })
+  expect(result.recommendations[0].recommendedPlan).toBe("free")
+  expect(result.recommendations[0].monthlySavings).toBe(40)
+})

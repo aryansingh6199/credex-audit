@@ -12,6 +12,7 @@ const TOOLS = [
   { id: "openai_api", label: "OpenAI API", plans: ["pay_as_you_go"] },
   { id: "gemini", label: "Gemini", plans: ["free", "pro", "ultra", "api"] },
   { id: "windsurf", label: "Windsurf", plans: ["free", "pro", "teams"] },
+  { id: "perplexity", label: "Perplexity", plans: ["free", "pro", "enterprise"] },
 ]
 
 const USE_CASES = ["coding", "writing", "data", "research", "mixed"]

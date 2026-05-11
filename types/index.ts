@@ -9,6 +9,8 @@ export type ToolName =
   | "openai_api"
   | "gemini"
   | "windsurf"
+  | "perplexity"
+  
 
 export interface ToolInput {
   tool: ToolName

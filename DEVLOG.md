@@ -15,9 +15,9 @@
 **Plan for tomorrow:** UI polish, add more test coverage, fill in entrepreneurial markdown files.
 
 ## Day 3 — 2026-05-11
-**Hours worked:** 4
-**What I did:** UI polish on results page. Wrote all entrepreneurial markdown files — GTM, ECONOMICS, USER_INTERVIEWS, LANDING_COPY, METRICS. Conducted 3 user interviews with Aman, Shubham, and Abhinay (Deloitte).
-**What I learned:** Writing GTM and ECONOMICS docs forces founder thinking. The user interviews revealed that tool overlap (paying for both Copilot and Claude) is a bigger pain point than plan mismatches.
+**Hours worked:** 5
+**What I did:** UI polish on results page. Wrote all entrepreneurial markdown files — GTM, ECONOMICS, USER_INTERVIEWS, LANDING_COPY, METRICS. Conducted 3 user interviews with Aman, Shubham, and Abhinay (Deloitte). Added Perplexity AI as a supported tool — extended ToolName type in types/index.ts, added pricing tiers and audit logic with 3 recommendation branches in auditEngine.ts, added Perplexity button with plans to the UI in page.tsx, added 2 Jest tests, and updated PRICING_DATA.md.
+**What I learned:** Writing GTM and ECONOMICS docs forces founder thinking. User interviews revealed tool overlap is a bigger pain point than plan mismatches. Perplexity was a notable gap — multiple interview subjects use it as their primary research tool.
 **Blockers / what I'm stuck on:** No major blockers.
 **Plan for tomorrow:** Write REFLECTION, ARCHITECTURE, PRICING_DATA, PROMPTS, TESTS markdown files.
 
