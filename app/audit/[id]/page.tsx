@@ -14,7 +14,8 @@ export default function AuditPage() {
   const [role, setRole] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-
+const [displaySavings, setDisplaySavings] = useState(0)
+const [displayAnnual, setDisplayAnnual] = useState(0)
   useEffect(() => {
     if (!id) return
     fetch(`/api/audit/${id}`)
@@ -25,6 +26,22 @@ export default function AuditPage() {
       })
       .catch(() => setLoading(false))
   }, [id])
+  useEffect(() => {
+  if (!audit) return
+  const duration = 1500
+  const steps = 60
+  const interval = duration / steps
+  let step = 0
+  const timer = setInterval(() => {
+    step++
+    const progress = step / steps
+    const eased = 1 - Math.pow(1 - progress, 3)
+    setDisplaySavings(Math.round(savings * eased))
+    setDisplayAnnual(Math.round(annualSavings * eased))
+    if (step >= steps) clearInterval(timer)
+  }, interval)
+  return () => clearInterval(timer)
+}, [audit])
 
   async function handleLeadSubmit() {
     if (!email) return
@@ -67,8 +84,8 @@ export default function AuditPage() {
 
         <div className="bg-gray-900 rounded-2xl p-8 mb-6 text-center">
           <p className="text-gray-400 text-sm mb-1">Total Monthly Savings</p>
-          <p className="text-5xl font-bold text-green-400">${savings}</p>
-          <p className="text-gray-400 mt-1">${annualSavings} saved per year</p>
+          <p className="text-5xl font-bold text-green-400">${displaySavings}</p>
+<p className="text-gray-400 mt-1">${displayAnnual} saved per year</p>
         </div>
 
         <div className="bg-gray-900 rounded-2xl p-6 mb-6">
