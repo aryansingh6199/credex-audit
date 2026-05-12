@@ -29,8 +29,8 @@
 **Plan for tomorrow:** Final testing on live URL, submit Google Form.
 
 ## Day 5 — 2026-05-13
-**Hours worked:** 2
-**What I did:** Final end-to-end testing on live Vercel URL. Verified git log shows commits across 5 distinct days. Confirmed all required files exist at repo root. Submitted Google Form.
-**What I learned:** End-to-end testing on deployed URL is different from local — caught one env variable issue with NEXT_PUBLIC_APP_URL.
+**Hours worked:** 3
+**What I did:** Fixed Vercel deployment — app was serving cached version, force redeployed to reflect all recent changes. Verified Perplexity AI button showing correctly on live URL. Confirmed animated savings counter working on deployed app. Final end-to-end testing on live Vercel URL.
+**What I learned:** Git commits don't always trigger Vercel redeploys correctly — sometimes a manual redeploy is needed. Always test on the live URL not just localhost.
 **Blockers / what I'm stuck on:** None.
 **Plan for tomorrow:** Await Round 2 results.
