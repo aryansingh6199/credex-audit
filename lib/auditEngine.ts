@@ -15,6 +15,7 @@ const PRICING: Record<string, Record<string, number>> = {
   openai_api: { pay_as_you_go: 0 },
   gemini: { free: 0, pro: 20, ultra: 30, api: 0 },
   windsurf: { free: 0, pro: 15, teams: 35 },
+  perplexity: { free: 0, pro: 20, enterprise: 40 },
 }
 
 function auditTool(tool: ToolInput, teamSize: number, useCase: string): ToolRecommendation {
@@ -111,7 +112,21 @@ function auditTool(tool: ToolInput, teamSize: number, useCase: string): ToolReco
       reason = "Windsurf plan is appropriate."
     }
   }
-
+if (tool.tool === "perplexity") {
+    if (tool.plan === "enterprise" && seats <= 5) {
+      recommendedPlan = "pro"
+      projectedSpend = 20 * seats
+      recommendedAction = "Downgrade to Pro"
+      reason = `Perplexity Enterprise ($40/user) is for large orgs needing SSO. With ${seats} seats, Pro ($20/user) gives full AI search at half the price.`
+    } else if (tool.plan === "pro" && useCase === "coding") {
+      recommendedPlan = "free"
+      projectedSpend = 0
+      recommendedAction = "Consider downgrading to Free"
+      reason = `Perplexity Pro is most valuable for research workflows. For a coding-focused team, the free tier may be enough.`
+    } else {
+      reason = "Perplexity plan is well-matched to your team's research use case."
+    }
+  }
   const monthlySavings = Math.max(0, spend - projectedSpend)
 
   return {
