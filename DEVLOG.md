@@ -22,9 +22,9 @@
 **Plan for tomorrow:** Write REFLECTION, ARCHITECTURE, PRICING_DATA, PROMPTS, TESTS markdown files.
 
 ## Day 4 — 2026-05-12
-**Hours worked:** 3
-**What I did:** Wrote REFLECTION, ARCHITECTURE, PRICING_DATA, PROMPTS, TESTS markdown files. Updated README with live URL and screenshots. Final review of all deliverables.
-**What I learned:** The DEVLOG is genuinely the most important file — it shows discipline more than any code can.
+**Hours worked:** 4
+**What I did:** Added animated savings counter on the results page — the total monthly and annual savings numbers count up from 0 with an ease-out effect when the audit loads. Added displaySavings and displayAnnual state, wrote a useEffect with setInterval and cubic ease-out math, and swapped the static values in the JSX.
+**What I learned:** Small animations on key numbers make the product feel much more polished. The ease-out curve (1 - Math.pow(1 - progress, 3)) makes the count feel natural rather than robotic.
 **Blockers / what I'm stuck on:** None.
 **Plan for tomorrow:** Final testing on live URL, submit Google Form.
 
